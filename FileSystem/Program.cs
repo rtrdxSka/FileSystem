@@ -35,6 +35,7 @@ namespace FileSystem
             }
 
         }
+
         private static void UserInput(FileStreamLinkedList<FileContent> fsll,ref FileStreamLinkedListNode<FileContent> newNode)
         {
 
@@ -250,8 +251,29 @@ namespace FileSystem
                     break;
                 case "ls":
                     {
-                        
-                       
+                        var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
+                        if(CurrentFolder.Name!="ROOT")
+                            currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+
+                        while (true)
+                        {
+                            if (currNode != null)
+                            {
+                                if (currNode.IsFolder)
+                                {
+                                    Console.WriteLine($"DIR   {currNode.Name}");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"      {currNode.Name}");
+                                }
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
 
                         // Izvejdane na sadarjanieto na direktoriq
                     }
