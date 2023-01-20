@@ -98,8 +98,8 @@ namespace FileSystem
         }
         void SaveContentNode (FileStreamLinkedListNode<T> node)
         {
-            if (!node.IsFolder)
-                node.Value.SaveToStream(_stream);
+            /*if (!node.IsFolder)
+                node.Value.SaveToStream(_stream);*/
             
         }
        public void SaveNode(FileStreamLinkedListNode<T> node)
@@ -149,18 +149,13 @@ namespace FileSystem
 
         }
 
-        public FileStreamLinkedListNode<FileContent> LoadNodeByPositon(long position)
+        public FileStreamLinkedListNode<T> LoadNodeByPositon(long position)
         {
-            //Head - 8
-            //Tail - 16
-            //prev na fail1 - 24
-            //next na fail1 - 32
-            //sadarjanie - 32 poziciq
-            //prev na fail2 - 8
+            
             if (position == -1)
                 return null;
             _stream.Position = _br.BaseStream.Position = position;
-            var node = new FileStreamLinkedListNode<FileContent>();
+            var node = new FileStreamLinkedListNode<T>();
             node.Position = _br.ReadInt64();
             node.Prev = _br.ReadInt64();
             node.Next = _br.ReadInt64();
@@ -170,8 +165,7 @@ namespace FileSystem
             node.IsFolder = _br.ReadBoolean();
             node.Name = _br.ReadString();
 
-            // FileContent f = new FileContent();
-            // f.LoadFromStream(_stream);
+           
             return node;
 
         }
@@ -204,6 +198,8 @@ namespace FileSystem
 
                 _tail = node.Position;
                 SaveMetaData();
+               
+               
             }
             else if (prev != null && prev.Next != -1) // dobavqne element v sredata
             {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FileSystem
 {
-    
+
     internal class Program
     {
         static FileStreamLinkedListNode<FileContent> CurrentFolder = null;
@@ -16,28 +16,30 @@ namespace FileSystem
         static void Main(string[] args)
         {
             File.Delete("storage.bin");
-            
+
             using (var fsll = new FileStreamLinkedList<FileContent>("storage.bin"))
             {
                 /*var fileContent = new FileContent() { Content = new byte[] { 12, 31, 45, 65, 123, 77, 9 } };*/
-                var newNode = new FileStreamLinkedListNode<FileContent>();
-                newNode.Name = "ROOT";
-                newNode.IsFolder = true;
-                newNode.LocalHead = -1;
-                newNode.LocalNext = -1;
-                newNode.LocalPrev = -1;
-                fsll.Insert(null, newNode);
-                CurrentFolder = newNode;
-                Console.WriteLine("Enter size of your FileSystem");
-                CheckSize( fsll );
-                while (true)
-                {
-                    UserInput(fsll, ref newNode);
-                }
-            
+            var newNode = new FileStreamLinkedListNode<FileContent>();
+            newNode.Name = "ROOT";
+            newNode.IsFolder = true;
+            newNode.LocalHead = -1;
+            newNode.LocalNext = -1;
+            newNode.LocalPrev = -1;
+            fsll.Insert(null, newNode);
+            CurrentFolder = newNode;
+            Console.WriteLine("Enter size of your FileSystem");
+            CheckSize(fsll);
+            while (true)
+            {
+                UserInput(fsll, ref newNode);
             }
-
+      
         }
+
+        
+    }
+        
         public static byte[] ToBytes(string input)
         {
             byte[] bytes = Encoding.ASCII.GetBytes(input);
@@ -132,6 +134,7 @@ namespace FileSystem
                                     newNode.LocalPrev = currNode.Position;
                                     fsll.SaveNode(currNode);
                                     fsll.SaveNode(newNode);
+                                    
 
                                     //tova sled tyk ne e sigyrno 
 
@@ -360,7 +363,7 @@ namespace FileSystem
                     {
                         var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
                         if(CurrentFolder.Name!="ROOT")
-                            currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            currNode = fsll.LoadNodeByPositon((long)currNode.LocalNext);
 
                         while (true)
                         {
@@ -374,7 +377,7 @@ namespace FileSystem
                                 {
                                     Console.WriteLine($"      {currNode.Name}");
                                 }
-                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                currNode = fsll.LoadNodeByPositon((long)currNode.LocalNext);
                             }
                             else
                             {
@@ -476,6 +479,7 @@ namespace FileSystem
                             {
                                 Name = fileName,
                                 IsFolder = false,
+                                LocalHead=-1,
                                 LocalPrev = -1,
                                 LocalNext = -1
                             };
@@ -517,9 +521,9 @@ namespace FileSystem
                         {
                             newNode = new FileStreamLinkedListNode<FileContent>
                             {
-                                Value = null,
                                 Name = fileName,
                                 IsFolder = false,
+                                LocalHead = -1,
                                 LocalPrev = -1,
                                 LocalNext = -1
                             };
@@ -564,6 +568,71 @@ namespace FileSystem
                     }// Sazdavane na prazen fail 
                     break;
                 case "write+append":
+                    {
+                        var fileName = arguments[1];
+                        var fileContent = "";
+                        for (int i = 1; i < arguments[2].Length - 1; i++)
+                        {
+                            fileContent += arguments[2][i];
+                        }
+
+                        if (fsll.GetStreamLength() + fileContent.Length >= fsll.Size)
+                        {
+                            Console.WriteLine("Not enough space for file");
+                            break;
+                        }
+
+                        var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
+                        if (CurrentFolder.Name != "ROOT")
+                            currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+
+                        bool found = false;
+                        while (true)
+                        {
+                            if (currNode != null)
+                            {
+                                if (!currNode.IsFolder && currNode.Name == fileName)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        if (found == true)
+                        {
+                            newNode = new FileStreamLinkedListNode<FileContent>
+                            {
+                                Name = fileName,
+                                IsFolder = false,
+                                LocalPrev = -1,
+                                LocalNext = -1
+                            };
+                            FileCreator.Content = ToBytes(fileContent);
+                            newNode.Value = FileCreator;
+                            fsll.Insert(prevNode, newNode);
+                            if (currNode.LocalHead == -1)
+                            {
+                                currNode.LocalHead = newNode.Position;
+                            }
+                            else
+                            {
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalHead);
+                                while (currNode.LocalHead != -1)
+                                {
+                                    currNode = fsll.LoadNodeByPositon(currNode.LocalHead);
+                                }
+                                currNode.LocalHead = newNode.Position;
+                            }
+
+                            prevNode=newNode;
+                        }
+                    }
                     break;
                 case "import":
                     {
@@ -571,6 +640,9 @@ namespace FileSystem
                     }
                     break;
                 case "export":
+                    {
+
+                    }
                     break;
                 default:
                     Console.WriteLine("Invalid command!");
