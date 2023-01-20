@@ -23,13 +23,18 @@ namespace FileSystem
     public class FileStreamLinkedList<T> : IDisposable
     where T : IStreamable, new()
     {
-        
 
         private Stream _stream;
         private BinaryWriter _bw;
         private BinaryReader _br;
         private long _head;
         private long _tail;
+        public long Size;
+
+        public long GetStreamLength()
+        {
+            return _stream.Length;
+        }
         public FileStreamLinkedListNode<T> Head
         {
             get
@@ -65,6 +70,7 @@ namespace FileSystem
 
             if (_new)
             {
+                 Size = 100;
                 _head = -1;
                 _tail = -1;
 
@@ -78,12 +84,14 @@ namespace FileSystem
         void SaveMetaData()
         {
             _stream.Position = 0;
+            _bw.Write(Size);
             _bw.Write(_head);
             _bw.Write(_tail);
         }
         void LoadMetaData()
         {
             _stream.Position = 0;
+            Size = _br.ReadInt64();
             _head = _br.ReadInt64();
             _tail = _br.ReadInt64();
 

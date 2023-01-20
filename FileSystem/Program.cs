@@ -15,6 +15,7 @@ namespace FileSystem
         static void Main(string[] args)
         {
             File.Delete("storage.bin");
+            
             using (var fsll = new FileStreamLinkedList<FileContent>("storage.bin"))
             {
                 /*var fileContent = new FileContent() { Content = new byte[] { 12, 31, 45, 65, 123, 77, 9 } };*/
@@ -26,7 +27,8 @@ namespace FileSystem
                 newNode.LocalPrev = -1;
                 fsll.Insert(null, newNode);
                 CurrentFolder = newNode;
-
+                Console.WriteLine("Enter size of your FileSystem");
+                CheckSize( fsll );
                 while (true)
                 {
                     UserInput(fsll, ref newNode);
@@ -35,7 +37,49 @@ namespace FileSystem
             }
 
         }
+        public static long GetTotalFreeSpace(string driveName)
+        {
+            foreach (DriveInfo drive in DriveInfo.GetDrives())
+                if (drive.IsReady && drive.Name == driveName)
+                    return drive.TotalFreeSpace;
 
+            return -1;
+        }
+        public static long GBtoByte(float gb)
+        {
+            return (long)Math.Floor(gb * 1073741824);
+        }
+        public static long BytetoGB(long bytes)
+        {
+            return bytes / 1073741824;
+        }
+        public static void CheckSize (FileStreamLinkedList<FileContent> fsll)
+        {
+            long freeSpace = GetTotalFreeSpace("D:\\");
+
+            Console.WriteLine($"Free space of your partition : {freeSpace} bytes, {BytetoGB(freeSpace)} GB");
+            Console.WriteLine("Hello, please choose size of your file system in GB: ");
+            float size = 0;
+            bool isSizeValid = false;
+            long fsSizeinBytes = 0;
+            while (!isSizeValid)
+            {
+                if (float.TryParse(Console.ReadLine(), out size))
+                {
+                    fsSizeinBytes = GBtoByte(size);
+
+                    if (fsSizeinBytes < freeSpace + GBtoByte(20))
+                    { // 20 svobodni gb ako iska da e s maks size filesystema
+                        isSizeValid = true;
+                        fsll.Size = fsSizeinBytes;
+                    }
+                    else
+                        Console.WriteLine("Nqmate tolkova prostranstvo.");
+                }
+                else
+                    Console.WriteLine("vavedete chislo");
+            }
+        }
         private static void UserInput(FileStreamLinkedList<FileContent> fsll,ref FileStreamLinkedListNode<FileContent> newNode)
         {
 
@@ -49,6 +93,7 @@ namespace FileSystem
             {
                 case "mkdir":
                     {
+
                         var folderName = arguments[1];
 
                         newNode = new FileStreamLinkedListNode<FileContent>
@@ -59,6 +104,11 @@ namespace FileSystem
                             LocalPrev = -1,
                             LocalNext = -1
                         };
+                        if(fsll.GetStreamLength() + 500>=fsll.Size)
+                        {
+                            Console.WriteLine("Not enough space for folder");
+                            break;
+                        }
                         
                         var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
                         if(currNode != null)
@@ -379,6 +429,7 @@ namespace FileSystem
                     break;
                 case "write":
                     {
+
                     }// Sazdavane na prazen fail 
                     break;
                 case "write+append":
