@@ -394,7 +394,7 @@ namespace FileSystem
                         var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
                         while (true)
                         {
-                            if(currNode.Name == folderName && !currNode.IsFolder)
+                            if(currNode.Name == folderName && currNode.IsFolder)
                             {
                                 CurrentFolder = currNode;
                                 Console.WriteLine($"Current DIR    {CurrentFolder.Name}");

@@ -98,9 +98,9 @@ namespace FileSystem
         }
         void SaveContentNode (FileStreamLinkedListNode<T> node)
         {
-            /*if (!node.IsFolder)
-                node.Value.SaveToStream(_stream);*/
-            
+            if (!node.IsFolder)
+                node.Value.SaveToStream(_stream);
+
         }
        public void SaveNode(FileStreamLinkedListNode<T> node)
         {
