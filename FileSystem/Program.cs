@@ -127,7 +127,7 @@ namespace FileSystem
                             LocalNext = -1
 
                             };*/
-                            newNode.LocalPrev = prevNode.Position;
+                            newNode.LocalPrev = CurrentFolder.Position;
                             newNode.LocalNext = -1;
                             fsll.Insert(prevNode, newNode);
                             /* if (prevNode.LocalHead == -1)
@@ -139,17 +139,17 @@ namespace FileSystem
 
                             /* TemporaryFolder = CurrentFolder;
                              CurrentFolder = newNode;*/
-                            prevNode.LocalNext = newNode.Position;
-                            prevNode.LocalHead = newNode.Position;
-                            CurrentFolder = prevNode;
-                            fsll.SaveNode(prevNode);
+                            CurrentFolder.LocalNext = newNode.Position;
+                            CurrentFolder.LocalHead = newNode.Position;
+                            /*CurrentFolder = prevNode;*/
+                            fsll.SaveNode(CurrentFolder);
                             var dummyNode = new FileStreamLinkedListNode<FileContent>
                             {
                                 Value = null,
                                 Name = "..",
                                 IsFolder = true,
                                 LocalNext = -1,
-                                LocalHead= -1,
+                                
 
                             };
                             
@@ -172,79 +172,130 @@ namespace FileSystem
                     {
                         var folderName = arguments[1];
                         var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
-                        if (currNode != null)
+                            //currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                        while (true)
                         {
-                            while (true)
+                            if (currNode.Name == folderName && currNode.IsFolder)
                             {
-                                if (currNode.Name == folderName && currNode.IsFolder)
+                                
+                                var dummy = fsll.LoadNodeByPositon(currNode.LocalHead);
+                                if(CurrentFolder.Name == "ROOT")
                                 {
-                                    if (currNode.LocalHead == -1)
+                                    //CASE 1 - tuk sme na parviq element, koyto nqma sledvast
+                                    if (currNode.LocalPrev == CurrentFolder.Position && currNode.LocalNext == -1)
                                     {
-                                        //CASE 1 - tuk sme na parviq element, koyto nqma sledvast
-                                        if (currNode.LocalPrev == CurrentFolder.Position && currNode.LocalNext == -1)
-                                        {
 
-                                            CurrentFolder.LocalHead = -1;
+                                        CurrentFolder.LocalNext = -1;
+                                        /*if (CurrentFolder.Name == "ROOT")*/
+                                        CurrentFolder.LocalHead = -1;
 
-                                            fsll.SaveNode(CurrentFolder);
-                                            fsll.Remove(currNode);
+                                        fsll.Remove(currNode);
+                                        fsll.SaveNode(CurrentFolder);
 
-                                        }//CASE 2- tuk sme na purviq element, koyto ima sledvasht
-                                        else if (currNode.LocalPrev == CurrentFolder.Position)
-                                        {
-                                            var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                    }//CASE 2- tuk sme na purviq element, koyto ima sledvasht
+                                    else if (currNode.LocalPrev == CurrentFolder.Position)
+                                    {
+                                        var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
 
-                                            CurrentFolder.LocalHead = currNextNode.Position;
-                                            currNextNode.LocalPrev = CurrentFolder.Position;
+                                        CurrentFolder.LocalNext = currNextNode.Position;
+                                        currNextNode.LocalPrev = CurrentFolder.Position;
 
-                                            fsll.SaveNode(currNextNode);
-                                            fsll.SaveNode(CurrentFolder);
-                                            fsll.Remove(currNode);
-                                        }//CASE 3 - tuks sme na posledniq element
-                                        else if (currNode.LocalNext == -1)
-                                        {
-                                            var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
-                                            currPrevNode.LocalNext = -1;
-                                            fsll.Remove(currNode);
-                                            fsll.SaveNode(currPrevNode);
-
-                                        }
-                                        else
-                                        {
-                                            var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
-                                            var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
-
-                                            currPrevNode.LocalNext = currNode.LocalNext;
-                                            currNextNode.LocalPrev = currNode.LocalPrev;
-
-                                            fsll.SaveNode(currPrevNode);
-                                            fsll.SaveNode(currNextNode);
-                                            fsll.Remove(currNode);
-
-                                        }
+                                        fsll.Remove(currNode);
+                                        fsll.SaveNode(currNextNode);
+                                        fsll.SaveNode(CurrentFolder);
+                                    }//CASE 3 - tuks sme na posledniq element
+                                    else if (currNode.LocalNext == -1)
+                                    {
+                                        var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
+                                        currPrevNode.LocalNext = -1;
+                                        fsll.Remove(currNode);
+                                        fsll.SaveNode(currPrevNode);
 
                                     }
                                     else
                                     {
-                                        Console.WriteLine("The selected folder is not empty!");
+                                        var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                        var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
+
+                                        currPrevNode.LocalNext = currNode.LocalNext;
+                                        currNextNode.LocalPrev = currNode.LocalPrev;
+
+                                        fsll.SaveNode(currPrevNode);
+                                        fsll.SaveNode(currNextNode);
+                                        fsll.Remove(currNode);
+
+                                    }
+                                }
+                                else if (dummy.LocalNext == -1)
+                                {
+                                    //Premahvame dummyto ot globalnata pamet i go razkachame
+                                    
+                                     dummy.LocalPrev = -1;
+                                     dummy.LocalHead= -1;
+                                     fsll.Remove(dummy);
+                                   
+                                    //CASE 1 - tuk sme na parviq element, koyto nqma sledvast
+                                    if (currNode.LocalPrev == CurrentFolder.Position && currNode.LocalNext == -1)
+                                    {
+
+                                        CurrentFolder.LocalNext = -1;
+                                        if(CurrentFolder.Name=="ROOT")
+                                           CurrentFolder.LocalHead = -1;
+
+                                        fsll.Remove(currNode);
+                                        fsll.SaveNode(CurrentFolder);
+
+                                    }//CASE 2- tuk sme na purviq element, koyto ima sledvasht
+                                    else if (currNode.LocalPrev == CurrentFolder.Position)
+                                    {
+                                        var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+
+                                        CurrentFolder.LocalNext = currNextNode.Position;
+                                        currNextNode.LocalPrev = CurrentFolder.Position;
+
+                                        fsll.Remove(currNode);
+                                        fsll.SaveNode(currNextNode);
+                                        fsll.SaveNode(CurrentFolder);
+                                    }//CASE 3 - tuks sme na posledniq element
+                                    else if (currNode.LocalNext == -1)
+                                    {
+                                        var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
+                                        currPrevNode.LocalNext = -1;
+                                        fsll.Remove(currNode);
+                                        fsll.SaveNode(currPrevNode);
+
+                                    }
+                                    else
+                                    {
+                                        var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                        var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
+                                        
+                                        currPrevNode.LocalNext = currNode.LocalNext;
+                                        currNextNode.LocalPrev = currNode.LocalPrev;
+
+                                        fsll.SaveNode(currPrevNode);
+                                        fsll.SaveNode(currNextNode);
+                                        fsll.Remove(currNode);
+
                                     }
 
-                                    break;
-                                }
-                                if (currNode.LocalNext != -1)
-                                {
-                                    currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
                                 }
                                 else
                                 {
-                                    Console.WriteLine("The selected folder was not found!");
-                                    break;
+                                    Console.WriteLine("The selected folder is not empty!");
                                 }
+
+                                break;
                             }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Current Directory is Empty!");
+                            else if (currNode.LocalNext != -1)
+                            {
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                Console.WriteLine("The selected folder was not found!");
+                                break;
+                            }
                         }
                     }
                     // Iztrivane na prazna direktoriq
@@ -287,7 +338,7 @@ namespace FileSystem
                             if(currNode.Name == folderName && currNode.IsFolder)
                             {
                                 CurrentFolder = currNode;
-                                Console.WriteLine(CurrentFolder.Name);
+                                Console.WriteLine($"Current DIR    {CurrentFolder.Name}");
                                 break;
                             }
                             else if(currNode.LocalNext!=-1)
@@ -305,9 +356,19 @@ namespace FileSystem
                 case "cd..":
                     {
                         var dummy = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
-                        var parentFolder = fsll.LoadNodeByPositon(dummy.LocalPrev);
-                        CurrentFolder = parentFolder;
-                        Console.WriteLine(CurrentFolder.Name);
+                        var parentDummy = fsll.LoadNodeByPositon(dummy.LocalPrev);
+                        if(parentDummy.Name == "ROOT")
+                        {
+                            CurrentFolder = parentDummy;
+                            Console.WriteLine($"Current DIR    {CurrentFolder.Name}");
+                        }else
+                        {
+                            var dummyParent = fsll.LoadNodeByPositon(parentDummy.LocalHead);
+                            CurrentFolder = dummyParent;
+                            Console.WriteLine($"Current DIR    {CurrentFolder.Name}");
+                        }
+                      
+                       
                     }
                     break;
                 case "cp": // Kopirane na fail
