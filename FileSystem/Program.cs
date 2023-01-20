@@ -11,7 +11,8 @@ namespace FileSystem
     internal class Program
     {
         static FileStreamLinkedListNode<FileContent> CurrentFolder = null;
-        static FileStreamLinkedListNode<FileContent> TemporaryFolder = null;
+        static FileContent FileCreator = new FileContent();
+
         static void Main(string[] args)
         {
             File.Delete("storage.bin");
@@ -36,6 +37,11 @@ namespace FileSystem
             
             }
 
+        }
+        public static byte[] ToBytes(string input)
+        {
+            byte[] bytes = Encoding.ASCII.GetBytes(input);
+            return bytes;
         }
         public static long GetTotalFreeSpace(string driveName)
         {
@@ -385,7 +391,7 @@ namespace FileSystem
                         var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
                         while (true)
                         {
-                            if(currNode.Name == folderName && currNode.IsFolder)
+                            if(currNode.Name == folderName && !currNode.IsFolder)
                             {
                                 CurrentFolder = currNode;
                                 Console.WriteLine($"Current DIR    {CurrentFolder.Name}");
@@ -429,12 +435,140 @@ namespace FileSystem
                     break;
                 case "write":
                     {
+                        var fileName = arguments[1];
+                        var fileContent = "";
+                        for(int i=1;i<arguments[2].Length-1;i++)
+                        {
+                            fileContent += arguments[2][i];
+                        }
+
+                        if (fsll.GetStreamLength() + fileContent.Length>= fsll.Size)
+                        {
+                            Console.WriteLine("Not enough space for file");
+                            break;
+                        }
+
+                        var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
+                        if (CurrentFolder.Name != "ROOT")
+                            currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+
+                        bool found = false;
+                        while (true)
+                        {
+                            if (currNode != null)
+                            {
+                                if (!currNode.IsFolder && currNode.Name==fileName)
+                                {
+                                    found=true;
+                                    break;
+                                }
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        if (found == true)
+                        {
+                            newNode = new FileStreamLinkedListNode<FileContent>
+                            {
+                                Name = fileName,
+                                IsFolder = false,
+                                LocalPrev = -1,
+                                LocalNext = -1
+                            };
+
+
+                            //Posleden element 
+                            if (currNode.LocalNext == -1)
+                            {
+                                //trabvaa da zapishem valueto
+                                newNode.LocalPrev = currNode.LocalPrev;
+                                FileCreator.Content = ToBytes(fileContent);
+                                newNode.Value = FileCreator;
+                                fsll.Insert(prevNode, newNode);
+                                var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
+                                currNodePrev.LocalNext = newNode.Position;
+                                fsll.SaveNode(currNodePrev);
+                                fsll.Remove(currNode);
+                                prevNode = newNode;
+                            }///Sreden element
+                            else if (currNode.LocalNext != -1 && currNode.LocalPrev != -1)
+                            {
+                                newNode.LocalPrev = currNode.LocalPrev;
+                                newNode.LocalNext = currNode.LocalNext;
+                                FileCreator.Content = ToBytes(fileContent);
+                                newNode.Value = FileCreator;
+                                fsll.Insert(prevNode, newNode);
+                                var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
+                                currNodePrev.LocalNext = newNode.Position;
+                                var currNodeNext = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                currNodeNext.LocalPrev = newNode.Position;
+                                fsll.SaveNode(currNodePrev);
+                                fsll.SaveNode(currNodeNext);
+                                fsll.Remove(currNode);
+                                prevNode=newNode;
+                            }
+
+                        }
+                        else
+                        {
+                            newNode = new FileStreamLinkedListNode<FileContent>
+                            {
+                                Value = null,
+                                Name = fileName,
+                                IsFolder = false,
+                                LocalPrev = -1,
+                                LocalNext = -1
+                            };
+
+                            /*!!!!*/
+                            if (CurrentFolder.LocalHead == -1)
+                            {
+                                currNode = CurrentFolder;
+                                FileCreator.Content=ToBytes(fileContent);
+                                newNode.Value = FileCreator;
+                                newNode.LocalPrev=CurrentFolder.Position;
+                                newNode.LocalNext = -1;
+                                fsll.Insert(prevNode, newNode);
+                                CurrentFolder.LocalHead = newNode.Position;
+                                CurrentFolder.LocalNext = newNode.Position;
+                                fsll.SaveNode(CurrentFolder);
+
+                                prevNode = newNode;
+                            }
+                            else
+                            {
+                                currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
+                                while(currNode.LocalNext!= -1)
+                                {
+                                    currNode= fsll.LoadNodeByPositon(currNode.LocalNext);
+                                }
+                                FileCreator.Content = ToBytes(fileContent);
+                                newNode.Value = FileCreator;
+                                newNode.LocalPrev = currNode.Position;
+                                fsll.Insert(prevNode, newNode);
+                                currNode.LocalNext = newNode.Position;
+                                fsll.SaveNode(currNode);
+
+                                prevNode = newNode;
+                            }
+
+                        }
+                        
+
+
 
                     }// Sazdavane na prazen fail 
                     break;
                 case "write+append":
                     break;
                 case "import":
+                    {
+
+                    }
                     break;
                 case "export":
                     break;
