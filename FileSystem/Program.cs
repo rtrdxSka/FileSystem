@@ -733,7 +733,8 @@ namespace FileSystem
                             if (currNode.LocalNext == -1)
                             {
                                 newNode.LocalPrev = currNode.LocalPrev;
-                                fsll.ImportInsert(prevNode, newNode, input);
+                                byte [] content = ToBytes(fileContent);
+                                fsll.ImportInsertAppend(prevNode, newNode, input,content);
                                 var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
                                 if (currNodePrev.Name == "ROOT")
                                 {
@@ -753,7 +754,8 @@ namespace FileSystem
                             {
                                 newNode.LocalPrev = currNode.LocalPrev;
                                 newNode.LocalNext = currNode.LocalNext;
-                                fsll.ImportInsert(prevNode, newNode, input);
+                                byte[] content = ToBytes(fileContent);
+                                fsll.ImportInsertAppend(prevNode, newNode, input, content);
                                 var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
                                 currNodePrev.LocalNext = newNode.Position;
                                 if (currNodePrev.Name == "ROOT")

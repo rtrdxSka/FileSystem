@@ -174,6 +174,71 @@ namespace FileSystem
 
         }
 
+        public void ImportInsertAppend(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node, string filePath,byte [] content)
+        {
+            node.Position = _stream.Length;
+            node.Prev = _tail;
+            node.Next = -1;
+            SaveNode(node);
+
+            using (var ofs = new FileStream($@"{filePath}", FileMode.Open, FileAccess.Read))
+            {
+                FileContent FileCreator = new FileContent();
+
+                int counter = 0;
+
+                var buffCounter = Math.Ceiling(((double)ofs.Length / 10000));
+                if (ofs.Length < 5000)
+                {
+                    byte[] buffer = new byte[ofs.Length];
+                    ofs.Read(buffer, 0, buffer.Length);
+                    FileCreator.Content = buffer;
+                    node.Value = FileCreator;
+                    SaveContentNode(node);
+                    FileCreator.Content = content;
+                    node.Value = FileCreator;
+                    SaveContentNode(node);
+                }
+                else
+                {
+                    if (buffCounter < 1)
+                        buffCounter = 1;
+
+                    while (counter < buffCounter)
+                    {
+                        if(counter == buffCounter -1 )
+                        {
+                            byte[] buffer = new byte[ofs.Length - (10000*((long)buffCounter-1))];
+                            ofs.Read(buffer, 0, buffer.Length);
+                            FileCreator.Content = buffer;
+                            node.Value = FileCreator;
+                            SaveContentNode(node);
+                            counter++;
+                        }
+                        else
+                        {
+                            byte[] buffer = new byte[10000];
+                            ofs.Read(buffer, 0, buffer.Length);
+                            FileCreator.Content = buffer;
+                            node.Value = FileCreator;
+                            SaveContentNode(node);
+                            counter++;
+                        }
+                       
+                    }
+                    FileCreator.Content = content;
+                    node.Value = FileCreator;
+                    SaveContentNode(node);
+                }
+            }
+
+
+            prev.Next = node.Position;
+            SaveNode(prev);
+
+            _tail = node.Position;
+            SaveMetaData();
+        }
         public void ImportInsert(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node,string filePath)
         {
 
@@ -188,8 +253,8 @@ namespace FileSystem
                
                 int counter = 0;
 
-                var buffCounter = Math.Ceiling(((double)ofs.Length/ 1000));
-                if (ofs.Length < 2000)
+                var buffCounter = Math.Ceiling(((double)ofs.Length/ 10000));
+                if (ofs.Length < 5000)
                 {
                     byte[] buffer = new byte[ofs.Length];
                     ofs.Read(buffer, 0, buffer.Length);
@@ -204,12 +269,24 @@ namespace FileSystem
 
                     while (counter < buffCounter)
                     {
-                        byte[] buffer = new byte[1000];
-                        ofs.Read(buffer, 0, buffer.Length);
-                        FileCreator.Content = buffer;
-                        node.Value = FileCreator;
-                        SaveContentNode(node);
-                        counter++;
+                        if (counter == buffCounter - 1)
+                        {
+                            byte[] buffer = new byte[ofs.Length - (10000 * ((long)buffCounter - 1))];
+                            ofs.Read(buffer, 0, buffer.Length);
+                            FileCreator.Content = buffer;
+                            node.Value = FileCreator;
+                            SaveContentNode(node);
+                            counter++;
+                        }
+                        else
+                        {
+                            byte[] buffer = new byte[10000];
+                            ofs.Read(buffer, 0, buffer.Length);
+                            FileCreator.Content = buffer;
+                            node.Value = FileCreator;
+                            SaveContentNode(node);
+                            counter++;
+                        }
                     }
                 }
             }
