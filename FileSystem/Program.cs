@@ -450,8 +450,19 @@ namespace FileSystem
                                 FileCreator.Content = ToBytes(fileContent);
                                 newNode.Value = FileCreator;
                                 fsll.Insert(prevNode, newNode);
+
                                 var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
                                 currNodePrev.LocalNext = newNode.Position;
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    currNodePrev.LocalHead = newNode.Position;
+                                }
+                                currNodePrev.LocalNext = newNode.Position;
+                                fsll.SaveNode(currNodePrev);
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    CurrentFolder = currNodePrev;
+                                }
                                 fsll.SaveNode(currNodePrev);
                                 fsll.Remove(currNode);
                                 prevNode = newNode;
@@ -467,6 +478,16 @@ namespace FileSystem
                                 currNodePrev.LocalNext = newNode.Position;
                                 var currNodeNext = fsll.LoadNodeByPositon(currNode.LocalNext);
                                 currNodeNext.LocalPrev = newNode.Position;
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    currNodePrev.LocalHead = newNode.Position;
+                                }
+                                currNodePrev.LocalNext = newNode.Position;
+                                fsll.SaveNode(currNodePrev);
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    CurrentFolder = currNodePrev;
+                                }
                                 fsll.SaveNode(currNodePrev);
                                 fsll.SaveNode(currNodeNext);
                                 fsll.Remove(currNode);
