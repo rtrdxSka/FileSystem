@@ -190,13 +190,13 @@ namespace FileSystem
             {
                 FileContent FileCreator = new FileContent();
                 int counter = 0;
-                var buffCounter = Math.Ceiling(((double)ofs.Length/ 2048));
+                var buffCounter = Math.Ceiling(((double)ofs.Length/ 128000));
 
                 if(buffCounter<1)
                     buffCounter = 1;
                 while (counter < buffCounter)
                 {
-                    byte [] buffer = new byte[2048];
+                    byte [] buffer = new byte[128000];
                     ofs.Read(buffer, 0, buffer.Length);
                     FileCreator.Content = buffer;
                     node.Value = FileCreator;

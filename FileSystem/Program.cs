@@ -258,6 +258,8 @@ namespace FileSystem
                                         var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
 
                                         CurrentFolder.LocalNext = currNextNode.Position;
+                                        //Opasna manevra 
+                                        CurrentFolder.LocalHead = currNextNode.Position;
                                         currNextNode.LocalPrev = CurrentFolder.Position;
 
                                         fsll.Remove(currNode);
@@ -310,7 +312,7 @@ namespace FileSystem
                                     {
                                         var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
 
-                                        CurrentFolder.LocalNext = currNextNode.Position;
+                                        CurrentFolder.LocalNext = currNextNode.Position;   
                                         currNextNode.LocalPrev = CurrentFolder.Position;
 
                                         fsll.Remove(currNode);
