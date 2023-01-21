@@ -181,7 +181,8 @@ namespace FileSystem
 
         public void ImportInsert(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node,string filePath)
         {
-            
+
+                node.Position = _stream.Length;
                 node.Prev = _tail;
                 node.Next = -1;
                 SaveNode(node);
@@ -189,21 +190,33 @@ namespace FileSystem
             using (var ofs = new FileStream($@"{filePath}", FileMode.Open, FileAccess.Read))
             {
                 FileContent FileCreator = new FileContent();
+               
                 int counter = 0;
-                var buffCounter = Math.Ceiling(((double)ofs.Length/ 128000));
 
-                if(buffCounter<1)
-                    buffCounter = 1;
-                while (counter < buffCounter)
+                var buffCounter = Math.Ceiling(((double)ofs.Length/ 1000));
+                if (ofs.Length < 2000)
                 {
-                    byte [] buffer = new byte[128000];
+                    byte[] buffer = new byte[ofs.Length];
                     ofs.Read(buffer, 0, buffer.Length);
                     FileCreator.Content = buffer;
                     node.Value = FileCreator;
                     SaveContentNode(node);
-                    counter++;
                 }
-   
+                else
+                {
+                    if (buffCounter < 1)
+                        buffCounter = 1;
+
+                    while (counter < buffCounter)
+                    {
+                        byte[] buffer = new byte[1000];
+                        ofs.Read(buffer, 0, buffer.Length);
+                        FileCreator.Content = buffer;
+                        node.Value = FileCreator;
+                        SaveContentNode(node);
+                        counter++;
+                    }
+                }
             }
             
 
