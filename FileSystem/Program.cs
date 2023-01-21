@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace FileSystem
 {
 
@@ -636,6 +637,30 @@ namespace FileSystem
                     break;
                 case "import":
                     {
+                        string input = arguments[1];
+                        var pathhArray = utilityClass.mySplit(arguments[1],'\\');
+                        var fileName=pathhArray[pathhArray.Length-1];
+                        newNode = new FileStreamLinkedListNode<FileContent>
+                        {
+                            Name = fileName,
+                            IsFolder = false,
+                            LocalHead = -1,
+                            LocalPrev = -1,
+                            LocalNext = -1
+                        };
+
+                       /* fsll.ImportInsert(prevNode, newNode, input);*/
+                        var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
+                        while(currNode.LocalNext != -1)
+                        {
+                            currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalNext);
+                        }
+                        
+                        newNode.LocalPrev = currNode.Position;
+                        fsll.ImportInsert(prevNode, newNode, input);
+                        currNode.LocalNext = newNode.Position;
+                        fsll.SaveNode(currNode);
+                        prevNode = newNode;
 
                     }
                     break;

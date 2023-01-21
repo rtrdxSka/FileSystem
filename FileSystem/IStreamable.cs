@@ -9,6 +9,8 @@ namespace FileSystem
 {
     public interface IStreamable
     {
+        byte[] Content { get; set; }
+
         void SaveToStream(Stream stream);
         void LoadFromStream(Stream stream, long size);
     }

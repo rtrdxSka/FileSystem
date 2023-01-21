@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FileSystem
 {
-    public class FileStreamLinkedListNode<T>
+    public class FileStreamLinkedListNode<FileContent>
     {
         public long Position;
         public long Prev;
@@ -18,10 +18,11 @@ namespace FileSystem
         public bool IsFolder;
         public string Name;
 
-        public T Value;
+        public FileContent Value;
     }
-    public class FileStreamLinkedList<T> : IDisposable
-    where T : IStreamable, new()
+    public class FileStreamLinkedList<FileContent> : IDisposable
+    /*where T : IStreamable, new()*/
+    where FileContent : IStreamable, new()
     {
 
         private Stream _stream;
@@ -35,11 +36,11 @@ namespace FileSystem
         {
             return _stream.Length;
         }
-        public FileStreamLinkedListNode<T> Head
+        public FileStreamLinkedListNode<FileContent> Head
         {
             get
             {
-                var node1 = new FileStreamLinkedListNode<T>() { Position = _head };
+                var node1 = new FileStreamLinkedListNode<FileContent>() { Position = _head };
                 
                 LoadNode(node1);
 
@@ -48,11 +49,11 @@ namespace FileSystem
             }
             
         }
-        public FileStreamLinkedListNode<T> Tail
+        public FileStreamLinkedListNode<FileContent> Tail
         {
             get
             {
-                var node2 = new FileStreamLinkedListNode<T>() { Position = _tail };
+                var node2 = new FileStreamLinkedListNode<FileContent>() { Position = _tail };
 
                 LoadNode(node2);
 
@@ -96,13 +97,20 @@ namespace FileSystem
             _tail = _br.ReadInt64();
 
         }
-        void SaveContentNode (FileStreamLinkedListNode<T> node)
+
+        /*void SaveContentImport(FileStreamLinkedListNode<FileContent> node)
+        {
+            
+                node.Value.SaveToStream(_stream);
+
+        }*/
+        void SaveContentNode (FileStreamLinkedListNode<FileContent> node)
         {
             if (!node.IsFolder)
                 node.Value.SaveToStream(_stream);
 
         }
-       public void SaveNode(FileStreamLinkedListNode<T> node)
+       public void SaveNode(FileStreamLinkedListNode<FileContent> node)
         {
            
             _stream.Position = node.Position;
@@ -116,16 +124,17 @@ namespace FileSystem
             _bw.Write(node.Name);
 
         }
-        void LoadContentNode(FileStreamLinkedListNode<T> node)
+        void LoadContentNode(FileStreamLinkedListNode<FileContent> node)
         {
+          
             LoadNode(node);
-            node.Value = new T();
+            node.Value = new FileContent();
             if (node.Next == -1)
                 node.Value.LoadFromStream(_stream, _stream.Length - _stream.Position);
             else
                 node.Value.LoadFromStream(_stream, node.Next - _stream.Position);
         }
-        void LoadNode(FileStreamLinkedListNode<T> node)
+        void LoadNode(FileStreamLinkedListNode<FileContent> node)
         {
             //Head - 8
             //Tail - 16
@@ -149,13 +158,13 @@ namespace FileSystem
 
         }
 
-        public FileStreamLinkedListNode<T> LoadNodeByPositon(long position)
+        public FileStreamLinkedListNode<FileContent> LoadNodeByPositon(long position)
         {
             
             if (position == -1)
                 return null;
             _stream.Position = _br.BaseStream.Position = position;
-            var node = new FileStreamLinkedListNode<T>();
+            var node = new FileStreamLinkedListNode<FileContent>();
             node.Position = _br.ReadInt64();
             node.Prev = _br.ReadInt64();
             node.Next = _br.ReadInt64();
@@ -170,7 +179,42 @@ namespace FileSystem
 
         }
 
-        public void Insert(FileStreamLinkedListNode<T> prev, FileStreamLinkedListNode<T> node)
+        public void ImportInsert(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node,string filePath)
+        {
+            
+                node.Prev = _tail;
+                node.Next = -1;
+                SaveNode(node);
+
+            using (var ofs = new FileStream($@"{filePath}", FileMode.Open, FileAccess.Read))
+            {
+                FileContent FileCreator = new FileContent();
+                int counter = 0;
+                var buffCounter = Math.Ceiling(((double)ofs.Length/ 2048));
+
+                if(buffCounter<1)
+                    buffCounter = 1;
+                while (counter < buffCounter)
+                {
+                    byte [] buffer = new byte[2048];
+                    ofs.Read(buffer, 0, buffer.Length);
+                    FileCreator.Content = buffer;
+                    node.Value = FileCreator;
+                    SaveContentNode(node);
+                    counter++;
+                }
+   
+            }
+            
+
+                prev.Next = node.Position;
+                SaveNode(prev);
+
+                _tail = node.Position;
+                SaveMetaData();
+
+        }
+        public void Insert(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node)
         {
             node.Position = _stream.Length;
             if (prev == null && _head == -1) // situaciq nqma nishto v spisaka
@@ -210,7 +254,7 @@ namespace FileSystem
                 prev.Next = node.Position;
                 SaveNode(prev);
 
-                var next = new FileStreamLinkedListNode<T>() { Position = node.Next };
+                var next = new FileStreamLinkedListNode<FileContent>() { Position = node.Next };
                 LoadNode(next);
                 next.Prev = node.Position;
                 SaveNode(next); 
@@ -221,7 +265,7 @@ namespace FileSystem
                 node.Next = _head;
                 SaveNode(node);
                 SaveContentNode(node);
-                var next = new FileStreamLinkedListNode<T>() { Position = _head };
+                var next = new FileStreamLinkedListNode<FileContent>() { Position = _head };
                 LoadNode(next);
                 next.Prev = node.Position;
                 SaveNode(next);
@@ -232,22 +276,22 @@ namespace FileSystem
 
             }
         }
-        public FileStreamLinkedListNode<T> Next(FileStreamLinkedListNode<T> prev)
+        public FileStreamLinkedListNode<FileContent> Next(FileStreamLinkedListNode<FileContent> prev)
         {
-            var node = new FileStreamLinkedListNode<T>() { Position = prev.Next };
+            var node = new FileStreamLinkedListNode<FileContent>() { Position = prev.Next };
 
             LoadNode(node);
 
             return node;
         }
-        public FileStreamLinkedListNode<T> Prev(FileStreamLinkedListNode<T> node)
+        public FileStreamLinkedListNode<FileContent> Prev(FileStreamLinkedListNode<FileContent> node)
         {
-            var prev = new FileStreamLinkedListNode<T>() { Position = node.Prev };
+            var prev = new FileStreamLinkedListNode<FileContent>() { Position = node.Prev };
 
             LoadNode(prev);
             return prev;
         }
-        public void Remove(FileStreamLinkedListNode<T> node)
+        public void Remove(FileStreamLinkedListNode<FileContent> node)
         {
            
             var nextPosition = node.Next;
