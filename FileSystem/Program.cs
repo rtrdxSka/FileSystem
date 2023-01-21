@@ -642,6 +642,10 @@ namespace FileSystem
                                 }
                                 currNodePrev.LocalNext = newNode.Position;
                                 fsll.SaveNode(currNodePrev);
+                                if(currNodePrev.Name == "ROOT")
+                                {
+                                    CurrentFolder = currNodePrev;
+                                }
                                 fsll.Remove(currNode);
                                 prevNode = newNode;
                             }
@@ -661,6 +665,10 @@ namespace FileSystem
                                 currNodeNext.LocalPrev = newNode.Position;
                                 fsll.SaveNode(currNodePrev);
                                 fsll.SaveNode(currNodeNext);
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    CurrentFolder = currNodePrev;
+                                }
                                 fsll.Remove(currNode);
                             }
                             prevNode = newNode;
@@ -675,11 +683,109 @@ namespace FileSystem
 
                     }
                     break;
+                case "import+append":
+                    {
+                        string input = arguments[1];
+                        string destination = arguments[2];
+                        var pathhArray = utilityClass.mySplit(arguments[1], '\\');
+                        var fileName = pathhArray[pathhArray.Length - 2];
+                        var fileContent = "";
+                        for (int i = 1; i < arguments[3].Length - 1; i++)
+                        {
+                            fileContent += arguments[3][i];
+                        }
+                        newNode = new FileStreamLinkedListNode<FileContent>
+                        {
+                            Name = destination,
+                            IsFolder = false,
+                            LocalHead = -1,
+                            LocalPrev = -1,
+                            LocalNext = -1
+                        };
+
+                        /* fsll.ImportInsert(prevNode, newNode, input);*/
+
+                        var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
+                        if (CurrentFolder.Name != "ROOT")
+                            currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+
+                        bool found = false;
+                        while (true)
+                        {
+                            if (currNode.Name == destination && !currNode.IsFolder)
+                            {
+                                found = true;
+                                break;
+                            }
+                            else if (currNode.LocalNext != -1)
+                            {
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                break;
+                            }
+
+                        }
+                        if (found == true)
+                        {
+                            //CASE 1 Файлът е последен
+                            if (currNode.LocalNext == -1)
+                            {
+                                newNode.LocalPrev = currNode.LocalPrev;
+                                fsll.ImportInsert(prevNode, newNode, input);
+                                var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    currNodePrev.LocalHead = newNode.Position;
+                                }
+                                currNodePrev.LocalNext = newNode.Position;
+                                fsll.SaveNode(currNodePrev);
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    CurrentFolder = currNodePrev;
+                                }
+                                fsll.Remove(currNode);
+                                prevNode = newNode;
+                            }
+                            //CASE 2 Файлът е среден
+                            else
+                            {
+                                newNode.LocalPrev = currNode.LocalPrev;
+                                newNode.LocalNext = currNode.LocalNext;
+                                fsll.ImportInsert(prevNode, newNode, input);
+                                var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
+                                currNodePrev.LocalNext = newNode.Position;
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    currNodePrev.LocalHead = newNode.Position;
+                                }
+                                var currNodeNext = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                currNodeNext.LocalPrev = newNode.Position;
+                                fsll.SaveNode(currNodePrev);
+                                fsll.SaveNode(currNodeNext);
+                                if (currNodePrev.Name == "ROOT")
+                                {
+                                    CurrentFolder = currNodePrev;
+                                }
+                                fsll.Remove(currNode);
+                            }
+                            prevNode = newNode;
+
+
+                        }
+                        else
+                        {
+                            Console.WriteLine("Destination not valid!");
+                        }
+                    }
+                    break;
                 case "export":
                     {
 
                     }
                     break;
+                
                 default:
                     Console.WriteLine("Invalid command!");
                     break;

@@ -98,12 +98,7 @@ namespace FileSystem
 
         }
 
-        /*void SaveContentImport(FileStreamLinkedListNode<FileContent> node)
-        {
-            
-                node.Value.SaveToStream(_stream);
-
-        }*/
+       
         void SaveContentNode (FileStreamLinkedListNode<FileContent> node)
         {
             if (!node.IsFolder)
