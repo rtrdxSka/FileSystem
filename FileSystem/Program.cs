@@ -387,9 +387,80 @@ namespace FileSystem
                        
                     }
                     break;
-                case "cp": // Kopirane na fail
+                case "cp":
+                    {
+                        
+                    }// Kopirane na fail
                     break;
-                case "rm": // Iztrivane na fail
+                case "rm":
+                    {
+                        var fileName = arguments[1];
+                        var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
+                         while(true)
+                        {
+                            if (currNode.Name == fileName && !currNode.IsFolder)
+                            {
+                                //tuk sme na parviq element, koyto nqma sledvast
+                                if (currNode.LocalPrev == CurrentFolder.Position && currNode.LocalNext == -1)
+                                {
+
+                                    CurrentFolder.LocalNext = -1;
+                                    if (CurrentFolder.Name == "ROOT")
+                                        CurrentFolder.LocalHead = -1;
+
+                                    fsll.Remove(currNode);
+                                    fsll.SaveNode(CurrentFolder);
+
+                                }//CASE 2- tuk sme na purviq element, koyto ima sledvasht
+                                else if (currNode.LocalPrev == CurrentFolder.Position)
+                                {
+                                    var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+
+                                    CurrentFolder.LocalNext = currNextNode.Position;
+                                    if (CurrentFolder.Name == "ROOT")
+                                        CurrentFolder.LocalHead = currNextNode.Position;
+
+                                    currNextNode.LocalPrev = CurrentFolder.Position;
+
+                                    fsll.Remove(currNode);
+                                    fsll.SaveNode(currNextNode);
+                                    fsll.SaveNode(CurrentFolder);
+                                }//CASE 3 - tuks sme na posledniq element
+                                else if (currNode.LocalNext == -1)
+                                {
+                                    var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
+                                    currPrevNode.LocalNext = -1;
+                                    fsll.Remove(currNode);
+                                    fsll.SaveNode(currPrevNode);
+
+                                }
+                                //CASE 4 - tuk sme po sredata
+                                else
+                                {
+                                    var currNextNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                    var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
+
+                                    currPrevNode.LocalNext = currNode.LocalNext;
+                                    currNextNode.LocalPrev = currNode.LocalPrev;
+
+                                    fsll.SaveNode(currPrevNode);
+                                    fsll.SaveNode(currNextNode);
+                                    fsll.Remove(currNode);
+
+                                }
+                                break;
+                            }
+                            else if (currNode.LocalNext != -1)
+                            {
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                Console.WriteLine("The selected folder was not found!");
+                                break;
+                            }
+                        }
+                    }// Iztrivane na fail
                     break;
                 case "cat": // Izvejdane na sadarjanie na fail na ekrana
                     break;
@@ -506,7 +577,7 @@ namespace FileSystem
                                 LocalNext = -1
                             };
 
-                            /*!!!!*/
+                            /*!!!!*/ //da se testva v drygi papki osven root
                             if (CurrentFolder.LocalHead == -1)
                             {
                                 currNode = CurrentFolder;
