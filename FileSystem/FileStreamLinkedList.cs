@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace FileSystem
 {
@@ -85,7 +86,11 @@ namespace FileSystem
              return node;
          }*/
         //testovo
-
+        public static byte[] ToBytes(string input)
+        {
+            byte[] bytes = Encoding.ASCII.GetBytes(input);
+            return bytes;
+        }
         void SaveMetaData()
         {
             _stream.Position = 0;
@@ -141,6 +146,65 @@ namespace FileSystem
 
         }
 
+        public void Copy (FileStreamLinkedListNode<FileContent> nodeToCopyFrom, FileStreamLinkedListNode<FileContent> nodeNew)
+        {
+            LoadNode(nodeToCopyFrom);
+            long valuePosition = _stream.Position;
+
+            long size = 0;
+
+            var nextNode = LoadNodeByPositon(nodeToCopyFrom.Next);
+            size = nextNode.Position - valuePosition;
+
+            int counter = 0;
+            FileContent FileCreator = new FileContent();
+
+            var buffCounter = Math.Ceiling(((double)size / 10000));
+            _stream.Position = valuePosition;
+            if (size < 5000)
+            {
+                byte[] buffer = FileCreator.LoadFormStream(_stream, size);
+                FileCreator.Content = buffer;
+                nodeNew.Value = FileCreator;
+                SaveContentNode(nodeNew);
+                
+
+
+            }
+            else
+            {
+                if (buffCounter < 1)
+                    buffCounter = 1;
+
+
+                while (counter < buffCounter)
+                {
+                    if (counter == buffCounter - 1)
+                    {
+                        long bufferSize = size - (10000 * ((long)buffCounter - 1));
+                        byte[] buffer = FileCreator.LoadFormStream(_stream, bufferSize);
+                        FileCreator.Content = buffer;
+                        nodeNew.Value = FileCreator;
+                        SaveContentNode(nodeNew);
+
+                        break;
+
+
+                    }
+                    else
+                    {
+                        byte[] buffer = FileCreator.LoadFormStream(_stream, 10000);
+                        FileCreator.Content = buffer;
+                        nodeNew.Value = FileCreator;
+                        SaveContentNode(nodeNew);
+                        counter++;
+
+                    }
+
+                }
+            }
+        }
+
         public void WriteAppend(FileStreamLinkedListNode<FileContent> nodeToCopyFrom, FileStreamLinkedListNode<FileContent> nodeNew, byte[] toAddContent)
         {
             LoadNode(nodeToCopyFrom);
@@ -166,8 +230,13 @@ namespace FileSystem
             if (size < 5000)
             {
                 byte[] buffer = FileCreator.LoadFormStream(_stream, size);
-                SaveContentNode(nodeNew);
-                FileCreator.Content = toAddContent;
+               /* FileCreator.Content = buffer;
+                nodeNew.Value = FileCreator;*/
+                var str = System.Text.Encoding.Default.GetString(buffer);
+               /* SaveContentNode(nodeNew);*/
+                /*FileCreator.Content = toAddContent;*/
+                str+= System.Text.Encoding.Default.GetString(toAddContent);
+                FileCreator.Content = ToBytes(str);
                 nodeNew.Value = FileCreator;
                 SaveContentNode(nodeNew);
 
@@ -185,6 +254,8 @@ namespace FileSystem
                     {
                         long bufferSize = size - (10000 * ((long)buffCounter - 1));
                         byte[] buffer = FileCreator.LoadFormStream(_stream, bufferSize);
+                        FileCreator.Content = buffer;
+                        nodeNew.Value = FileCreator;
                         SaveContentNode(nodeNew);
                         break;
 
@@ -193,6 +264,8 @@ namespace FileSystem
                     else
                     {
                         byte[] buffer = FileCreator.LoadFormStream(_stream, 10000);
+                        FileCreator.Content = buffer;
+                        nodeNew.Value = FileCreator;
                         SaveContentNode(nodeNew);
                         counter++;
 

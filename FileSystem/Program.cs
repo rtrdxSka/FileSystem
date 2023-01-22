@@ -429,7 +429,7 @@ namespace FileSystem
                                     IsFolder = false,
                                     LocalPrev = -1,
                                     LocalNext = 1,
-                                    LocalHead = currNode.Position,
+                                   
                                     
                                 };
                                 newNode.Name += ".CP";
@@ -438,6 +438,7 @@ namespace FileSystem
                                 if (currNode.LocalNext == 1)
                                 {
                                     fsll.Insert(currNode, newNode);
+                                    fsll.Copy(currNode, newNode);
                                     currNode.LocalNext = newNode.Position;
                                     newNode.LocalPrev = currNode.Position;
                                     fsll.SaveNode(currNode);
@@ -452,6 +453,7 @@ namespace FileSystem
                                         if(currNode.LocalNext == 1)
                                         {
                                             fsll.Insert(currNode, newNode);
+                                            fsll.Copy(currNode, newNode);
                                             currNode.LocalNext = newNode.Position;
                                             newNode.LocalPrev = currNode.Position;
                                             fsll.SaveNode(currNode);
@@ -783,9 +785,11 @@ namespace FileSystem
                                 LocalPrev = -1,
                                 LocalNext = 1
                             };
-                            FileCreator.Content = ToBytes(fileContent);
+                            FileCreator.Content = ToBytes("");
                             newNode.Value = FileCreator;
                             fsll.Insert(prevNode, newNode);
+                            FileCreator.Content = ToBytes(fileContent);
+                            newNode.Value = FileCreator;
                             fsll.WriteAppend(currNode, newNode, FileCreator.Content);
                             var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
                             var currNodeNext = fsll.LoadNodeByPositon(currNode.LocalNext);
