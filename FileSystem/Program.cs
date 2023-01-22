@@ -264,7 +264,7 @@ namespace FileSystem
 
                                     dummy.LocalPrev = -1;
                                     dummy.LocalHead = -1;
-                                    fsll.Remove(dummy);
+                                    /*fsll.Remove(dummy);*/
 
                                     //CASE 1 - tuk sme na parviq element, koyto nqma sledvast
                                     if (currNode.LocalPrev == CurrentFolder.Position && currNode.LocalNext == -1)
@@ -274,7 +274,7 @@ namespace FileSystem
                                         if (CurrentFolder.Name == "ROOT")
                                             CurrentFolder.LocalHead = -1;
 
-                                        fsll.Remove(currNode);
+                                        /*fsll.Remove(currNode);*/
                                         fsll.SaveNode(CurrentFolder);
 
                                     }//CASE 2- tuk sme na purviq element, koyto ima sledvasht
@@ -288,7 +288,7 @@ namespace FileSystem
 
                                         currNextNode.LocalPrev = CurrentFolder.Position;
 
-                                        fsll.Remove(currNode);
+                                        /*fsll.Remove(currNode);*/
                                         fsll.SaveNode(currNextNode);
                                         fsll.SaveNode(CurrentFolder);
                                     }//CASE 3 - tuks sme na posledniq element
@@ -296,7 +296,7 @@ namespace FileSystem
                                     {
                                         var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
                                         currPrevNode.LocalNext = -1;
-                                        fsll.Remove(currNode);
+                                        /*fsll.Remove(currNode);*/
                                         fsll.SaveNode(currPrevNode);
 
                                     }
@@ -311,7 +311,7 @@ namespace FileSystem
 
                                         fsll.SaveNode(currPrevNode);
                                         fsll.SaveNode(currNextNode);
-                                        fsll.Remove(currNode);
+                                        /*fsll.Remove(currNode);*/
 
                                     }
 
@@ -489,7 +489,7 @@ namespace FileSystem
                                     if (CurrentFolder.Name == "ROOT")
                                         CurrentFolder.LocalHead = -1;
 
-                                    fsll.Remove(currNode);
+                                   /* fsll.Remove(currNode);*/
                                     fsll.SaveNode(CurrentFolder);
 
                                 }//CASE 2- tuk sme na purviq element, koyto ima sledvasht
@@ -503,7 +503,7 @@ namespace FileSystem
 
                                     currNextNode.LocalPrev = CurrentFolder.Position;
 
-                                    fsll.Remove(currNode);
+                                    /*fsll.Remove(currNode);*/
                                     fsll.SaveNode(currNextNode);
                                     fsll.SaveNode(CurrentFolder);
                                 }//CASE 3 - tuks sme na posledniq element
@@ -511,7 +511,7 @@ namespace FileSystem
                                 {
                                     var currPrevNode = fsll.LoadNodeByPositon(currNode.LocalPrev);
                                     currPrevNode.LocalNext = -1;
-                                    fsll.Remove(currNode);
+                                    /*fsll.Remove(currNode);*/
                                     fsll.SaveNode(currPrevNode);
 
                                 }
@@ -526,7 +526,7 @@ namespace FileSystem
 
                                     fsll.SaveNode(currPrevNode);
                                     fsll.SaveNode(currNextNode);
-                                    fsll.Remove(currNode);
+                                    /*fsll.Remove(currNode);*/
 
                                 }
                                 break;
@@ -957,7 +957,36 @@ namespace FileSystem
                     break;
                 case "export":
                     {
+                        //export ROOT\test2 D:\export\test2.txt
+                        string pathInput = arguments[1];
+                        var path = utilityClass.mySplit(pathInput, '\\');
+                        var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
 
+                        int i = 1;
+                        while (true)
+                        {
+                            if (currNode.Name == path[i] && currNode.IsFolder && i!=path.Length-1)
+                            {
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalHead);
+                                i++;
+                            }
+                            else if(currNode.Name == path[i] && !currNode.IsFolder && i == path.Length-1)
+                            {
+                                fsll.LoadNode(currNode);
+                                fsll.LoadExport(currNode, arguments[2]);
+                                break;
+                            }
+                            else if(currNode.LocalNext!=-1)
+                            {
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                Console.WriteLine("The given path is invalid!"); 
+                                break;    
+                            }
+                        }
+                        
                     }
                     break;
                 

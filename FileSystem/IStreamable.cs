@@ -12,6 +12,8 @@ namespace FileSystem
         byte[] Content { get; set; }
 
         void SaveToStream(Stream stream);
-        void LoadFromStream(Stream stream, long size);
+        byte[] LoadFromStream(Stream stream, long size);
+        byte[] LoadFormStream(Stream stream, long size);
+        /* byte[] LoadFormStream(Stream stream, long size);*/
     }
 }

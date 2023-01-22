@@ -25,7 +25,7 @@ namespace FileSystem
     where FileContent : IStreamable, new()
     {
 
-        private Stream _stream;
+        public Stream _stream;
         private BinaryWriter _bw;
         private BinaryReader _br;
         private long _head;
@@ -146,6 +146,75 @@ namespace FileSystem
             _bw.Write(node.Name);
 
         }
+        public void LoadExport(FileStreamLinkedListNode<FileContent> node, string pathString)
+        {
+            LoadNode(node);
+            FileContent FileCreator = new FileContent();
+            long valuePosition = _stream.Position;
+            var nextNode = Next(node);
+            long size = nextNode.Position - valuePosition;
+
+
+            int counter = 0;
+
+            var buffCounter = Math.Ceiling(((double)size / 10000));
+            
+            if (size < 5000)
+            {
+                byte[] buffer = FileCreator.LoadFormStream( _stream,size);
+                //var content = System.Text.Encoding.Default.GetString(buffer);
+                if (!System.IO.File.Exists($@"{pathString}"))
+                {
+                    using (System.IO.FileStream fs = System.IO.File.Create($@"{pathString}"))
+                    {
+                        fs.Write(buffer,0,(int)size);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("File  already exists.");
+                    return;
+                }
+
+            }
+            else
+            {
+                if (buffCounter < 1)
+                    buffCounter = 1;
+
+                if (!System.IO.File.Exists($@"{pathString}"))
+                {
+                    using (System.IO.FileStream fs = System.IO.File.Create($@"{pathString}"))
+                    {
+                        while (counter < buffCounter)
+                        {
+                            if (counter == buffCounter - 1)
+                            {
+                                long bufferSize = size - (10000 * ((long)buffCounter - 1));
+                                byte[] buffer = FileCreator.LoadFormStream(_stream, bufferSize);
+                                fs.Write(buffer, 0, (int)bufferSize);
+                                break;
+
+
+                            }
+                            else
+                            {
+                                byte[] buffer = FileCreator.LoadFormStream(_stream, 10000);
+                                fs.Write(buffer, 0, 10000);
+                                counter++;
+
+                            }
+
+                        }
+                    }
+                }else
+                {
+                    Console.WriteLine("File already exists.");
+                    return;
+                }
+
+            }
+        }
         void LoadContentNode(FileStreamLinkedListNode<FileContent> node)
         {
           
@@ -156,7 +225,7 @@ namespace FileSystem
             else
                 node.Value.LoadFromStream(_stream, node.Next - _stream.Position);
         }
-        void LoadNode(FileStreamLinkedListNode<FileContent> node)
+       public void LoadNode(FileStreamLinkedListNode<FileContent> node)
         {
             //Head - 8
             //Tail - 16
@@ -387,6 +456,16 @@ namespace FileSystem
 
 
             }
+        }
+
+        public FileStreamLinkedListNode<FileContent> NextIsnide(FileStreamLinkedListNode<FileContent> node)
+        {
+            var prev = new FileStreamLinkedListNode<FileContent>() { Position = node.Prev };
+
+            LoadNode(prev);
+            
+
+            return node;
         }
         public FileStreamLinkedListNode<FileContent> Next(FileStreamLinkedListNode<FileContent> prev)
         {

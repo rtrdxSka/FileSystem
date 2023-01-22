@@ -12,20 +12,33 @@ namespace FileSystem
        
         public byte[] Content { get; set; }
 
-        public void LoadFromStream(Stream stream, long size)
+        public byte[] LoadFormStream(Stream stream, long size)
         {
             Content = null;
             BinaryReader br = new BinaryReader(stream);
-          //  br.ReadInt64();
-         //   br.ReadInt64();
             Content = new byte[size];
-            br.Read(Content,0, (int)size);
-            for (int i = 0; i < Content.Length; i++)
-            {
-                Console.WriteLine(Content[i]);
-            }
-           // br.Read()
+            br.Read(Content, 0, (int)size);
+            return Content;
         }
+
+        public byte[] LoadFromStream(Stream stream, long size)
+        {
+            Content = null;
+            BinaryReader br = new BinaryReader(stream);
+            Content = new byte[size];
+            br.Read(Content, 0, (int)size);
+            return Content;
+        }
+
+        /* public byte[] LoadFromStream(Stream stream, long size)
+         {
+             Content = null;
+             BinaryReader br = new BinaryReader(stream);
+             Content = new byte[size];
+             br.Read(Content,0, (int)size);
+             return Content;
+
+         }*/
 
         public void SaveToStream(Stream stream)
         {
