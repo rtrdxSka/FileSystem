@@ -558,6 +558,30 @@ namespace FileSystem
                         var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
                         if (CurrentFolder.Name != "ROOT")
                             currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                        bool found = false;
+                        while(true)
+                        {
+                            if (currNode != null)
+                            {
+                                if (!currNode.IsFolder && currNode.Name == fileName)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                break;
+                            }
+
+                        }
+
+                        if(found==true)
+                        {
+                            fsll.ShowContent(currNode);
+                            
+                        }
 
                     }// Izvejdane na sadarjanie na fail na ekrana
                     break;

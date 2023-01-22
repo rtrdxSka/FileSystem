@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileSystem
 {
@@ -41,13 +37,13 @@ namespace FileSystem
             get
             {
                 var node1 = new FileStreamLinkedListNode<FileContent>() { Position = _head };
-                
+
                 LoadNode(node1);
 
                 return node1;
-               
+
             }
-            
+
         }
         public FileStreamLinkedListNode<FileContent> Tail
         {
@@ -71,7 +67,7 @@ namespace FileSystem
 
             if (_new)
             {
-                 Size = 100;
+                Size = 100;
                 _head = -1;
                 _tail = -1;
 
@@ -83,11 +79,11 @@ namespace FileSystem
                 LoadMetaData();
             }*/
         }
-       /* public FileStreamLinkedListNode<FileContent> LoadContainer()
-        {
-            var node = ContainerExist();
-            return node;
-        }*/
+        /* public FileStreamLinkedListNode<FileContent> LoadContainer()
+         {
+             var node = ContainerExist();
+             return node;
+         }*/
         //testovo
 
         void SaveMetaData()
@@ -102,13 +98,13 @@ namespace FileSystem
             _stream.Position = 0;
             Size = _br.ReadInt64();
             _head = _br.ReadInt64();
-            _tail = _br.ReadInt64();     
+            _tail = _br.ReadInt64();
         }
 
         //testovo
-         public FileStreamLinkedListNode<FileContent> ContainerExist()
+        public FileStreamLinkedListNode<FileContent> ContainerExist()
         {
-           
+
             LoadMetaData();
             var node = new FileStreamLinkedListNode<FileContent>();
             node.Position = _br.ReadInt64();
@@ -124,15 +120,15 @@ namespace FileSystem
         }
 
 
-        void SaveContentNode (FileStreamLinkedListNode<FileContent> node)
+        void SaveContentNode(FileStreamLinkedListNode<FileContent> node)
         {
             if (!node.IsFolder)
                 node.Value.SaveToStream(_stream);
 
         }
-       public void SaveNode(FileStreamLinkedListNode<FileContent> node)
+        public void SaveNode(FileStreamLinkedListNode<FileContent> node)
         {
-           
+
             _stream.Position = node.Position;
             _bw.Write(node.Position);
             _bw.Write(node.Prev);
@@ -150,13 +146,13 @@ namespace FileSystem
             LoadNode(nodeToCopyFrom);
             FileContent FileCreator = new FileContent();
             long valuePosition = _stream.Position;
-        
+
 
 
             long size = 0;
 
 
-    
+
             var nextNode = LoadNodeByPositon(nodeToCopyFrom.Next);
             size = nextNode.Position - valuePosition;
 
@@ -189,7 +185,7 @@ namespace FileSystem
                     {
                         long bufferSize = size - (10000 * ((long)buffCounter - 1));
                         byte[] buffer = FileCreator.LoadFormStream(_stream, bufferSize);
-                        SaveContentNode(nodeNew); 
+                        SaveContentNode(nodeNew);
                         break;
 
 
@@ -197,7 +193,7 @@ namespace FileSystem
                     else
                     {
                         byte[] buffer = FileCreator.LoadFormStream(_stream, 10000);
-                        SaveContentNode(nodeNew); 
+                        SaveContentNode(nodeNew);
                         counter++;
 
                     }
@@ -208,14 +204,14 @@ namespace FileSystem
 
 
         }
-        public void LoadExport(FileStreamLinkedListNode<FileContent> node, string pathString)
+        public void ShowContent(FileStreamLinkedListNode<FileContent> node)
         {
             LoadNode(node);
             FileContent FileCreator = new FileContent();
             long valuePosition = _stream.Position;
             var nextNode = LoadNodeByPositon(node.Next);
-            
-            
+
+
             long size = 0;
 
 
@@ -227,7 +223,7 @@ namespace FileSystem
             {
                 size = nextNode.Prev - valuePosition;
             }
-            
+
 
 
             int counter = 0;
@@ -236,13 +232,80 @@ namespace FileSystem
             _stream.Position = valuePosition;
             if (size < 5000)
             {
-                byte[] buffer = FileCreator.LoadFormStream( _stream,size);
+                byte[] buffer = FileCreator.LoadFormStream(_stream, size);
+                //var content = System.Text.Encoding.Default.GetString(buffer);
+                var str = System.Text.Encoding.Default.GetString(buffer);
+                Console.Write(str);
+
+            }
+            else
+            {
+                if (buffCounter < 1)
+                    buffCounter = 1;
+
+
+                while (counter < buffCounter)
+                {
+                    if (counter == buffCounter - 1)
+                    {
+                        long bufferSize = size - (10000 * ((long)buffCounter - 1));
+                        byte[] buffer = FileCreator.LoadFormStream(_stream, bufferSize);
+                        var str = System.Text.Encoding.Default.GetString(buffer);
+                        Console.Write(str);
+                        break;
+
+
+                    }
+                    else
+                    {
+                        byte[] buffer = FileCreator.LoadFormStream(_stream, 10000);
+                        var str = System.Text.Encoding.Default.GetString(buffer);
+                        Console.Write(str);
+                        counter++;
+
+                    }
+
+
+
+                }
+                
+            }
+        }
+        public void LoadExport(FileStreamLinkedListNode<FileContent> node, string pathString)
+        {
+            LoadNode(node);
+            FileContent FileCreator = new FileContent();
+            long valuePosition = _stream.Position;
+            var nextNode = LoadNodeByPositon(node.Next);
+
+
+            long size = 0;
+
+
+            if (node.Next == 1)
+            {
+                size = _stream.Length - valuePosition;
+            }
+            else
+            {
+                size = nextNode.Prev - valuePosition;
+            }
+
+
+
+            int counter = 0;
+
+            var buffCounter = Math.Ceiling(((double)size / 10000));
+            _stream.Position = valuePosition;
+            if (size < 5000)
+            {
+                byte[] buffer = FileCreator.LoadFormStream(_stream, size);
                 //var content = System.Text.Encoding.Default.GetString(buffer);
                 if (!System.IO.File.Exists($@"{pathString}"))
                 {
                     using (System.IO.FileStream fs = System.IO.File.Create($@"{pathString}"))
                     {
-                        fs.Write(buffer,0,(int)size);
+                        fs.Write(buffer, 0, (int)size);
                     }
                 }
                 else
@@ -282,7 +345,8 @@ namespace FileSystem
 
                         }
                     }
-                }else
+                }
+                else
                 {
                     Console.WriteLine("File already exists.");
                     return;
@@ -292,7 +356,7 @@ namespace FileSystem
         }
         void LoadContentNode(FileStreamLinkedListNode<FileContent> node)
         {
-          
+
             LoadNode(node);
             node.Value = new FileContent();
             if (node.Next == 1)
@@ -300,7 +364,7 @@ namespace FileSystem
             else
                 node.Value.LoadFromStream(_stream, node.Next - _stream.Position);
         }
-       public void LoadNode(FileStreamLinkedListNode<FileContent> node)
+        public void LoadNode(FileStreamLinkedListNode<FileContent> node)
         {
             //Head - 8
             //Tail - 16
@@ -326,7 +390,7 @@ namespace FileSystem
 
         public FileStreamLinkedListNode<FileContent> LoadNodeByPositon(long position)
         {
-            
+
             if (position == 1)
                 return null;
             _stream.Position = _br.BaseStream.Position = position;
@@ -340,12 +404,12 @@ namespace FileSystem
             node.IsFolder = _br.ReadBoolean();
             node.Name = _br.ReadString();
 
-           
+
             return node;
 
         }
 
-        public void ImportInsertAppend(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node, string filePath,byte [] content)
+        public void ImportInsertAppend(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node, string filePath, byte[] content)
         {
             node.Position = _stream.Length;
             node.Prev = _tail;
@@ -377,9 +441,9 @@ namespace FileSystem
 
                     while (counter < buffCounter)
                     {
-                        if(counter == buffCounter -1 )
+                        if (counter == buffCounter - 1)
                         {
-                            byte[] buffer = new byte[ofs.Length - (10000*((long)buffCounter-1))];
+                            byte[] buffer = new byte[ofs.Length - (10000 * ((long)buffCounter - 1))];
                             ofs.Read(buffer, 0, buffer.Length);
                             FileCreator.Content = buffer;
                             node.Value = FileCreator;
@@ -395,7 +459,7 @@ namespace FileSystem
                             SaveContentNode(node);
                             counter++;
                         }
-                       
+
                     }
                     FileCreator.Content = content;
                     node.Value = FileCreator;
@@ -410,21 +474,21 @@ namespace FileSystem
             _tail = node.Position;
             SaveMetaData();
         }
-        public void ImportInsert(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node,string filePath)
+        public void ImportInsert(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node, string filePath)
         {
 
-                node.Position = _stream.Length;
-                node.Prev = _tail;
-                node.Next = 1;
-                SaveNode(node);
+            node.Position = _stream.Length;
+            node.Prev = _tail;
+            node.Next = 1;
+            SaveNode(node);
 
             using (var ofs = new FileStream($@"{filePath}", FileMode.Open, FileAccess.Read))
             {
                 FileContent FileCreator = new FileContent();
-               
+
                 int counter = 0;
 
-                var buffCounter = Math.Ceiling(((double)ofs.Length/ 10000));
+                var buffCounter = Math.Ceiling(((double)ofs.Length / 10000));
                 if (ofs.Length < 5000)
                 {
                     byte[] buffer = new byte[ofs.Length];
@@ -461,13 +525,13 @@ namespace FileSystem
                     }
                 }
             }
-            
 
-                prev.Next = node.Position;
-                SaveNode(prev);
 
-                _tail = node.Position;
-                SaveMetaData();
+            prev.Next = node.Position;
+            SaveNode(prev);
+
+            _tail = node.Position;
+            SaveMetaData();
 
         }
         public void Insert(FileStreamLinkedListNode<FileContent> prev, FileStreamLinkedListNode<FileContent> node)
@@ -483,7 +547,7 @@ namespace FileSystem
                 long position = node.Position;
                 _head = position;
                 _tail = position;
-                
+
                 SaveMetaData();
             }
             else if (prev != null && prev.Next == 1) // posledniq element, koito se dobavq
@@ -498,8 +562,8 @@ namespace FileSystem
 
                 _tail = node.Position;
                 SaveMetaData();
-               
-               
+
+
             }
             else if (prev != null && prev.Next != 1) // dobavqne element v sredata
             {
@@ -513,7 +577,7 @@ namespace FileSystem
                 var next = new FileStreamLinkedListNode<FileContent>() { Position = node.Next };
                 LoadNode(next);
                 next.Prev = node.Position;
-                SaveNode(next); 
+                SaveNode(next);
             }
             else if (prev == null && _head != -1) // parvi element, v palen spisak
             {
@@ -540,7 +604,7 @@ namespace FileSystem
             {
                 currNode = LoadNodeByPositon(currNode.Prev);
             }
-            
+
 
             return currNode;
         }
@@ -561,7 +625,7 @@ namespace FileSystem
         }
         public void Remove(FileStreamLinkedListNode<FileContent> node)
         {
-           
+
             var nextPosition = node.Next;
             var prevPosition = node.Prev;
             if (nextPosition != -1 && prevPosition != -1)
@@ -601,7 +665,7 @@ namespace FileSystem
             }
             else
             {
-               _head = _tail = -1;
+                _head = _tail = -1;
             }
 
 
