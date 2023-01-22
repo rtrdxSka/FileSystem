@@ -149,25 +149,36 @@ namespace FileSystem
         public void Copy (FileStreamLinkedListNode<FileContent> nodeToCopyFrom, FileStreamLinkedListNode<FileContent> nodeNew)
         {
             LoadNode(nodeToCopyFrom);
+
+            FileContent FileCreator = new FileContent();
+
             long valuePosition = _stream.Position;
+
+
 
             long size = 0;
 
+
+
             var nextNode = LoadNodeByPositon(nodeToCopyFrom.Next);
             size = nextNode.Position - valuePosition;
+            /*size+=toAddContent.Length;*/
+
+
+
 
             int counter = 0;
-            FileContent FileCreator = new FileContent();
 
             var buffCounter = Math.Ceiling(((double)size / 10000));
             _stream.Position = valuePosition;
             if (size < 5000)
             {
                 byte[] buffer = FileCreator.LoadFormStream(_stream, size);
+                
                 FileCreator.Content = buffer;
+                LoadNode(nodeNew);
                 nodeNew.Value = FileCreator;
                 SaveContentNode(nodeNew);
-                
 
 
             }
@@ -181,29 +192,32 @@ namespace FileSystem
                 {
                     if (counter == buffCounter - 1)
                     {
+                        _stream.Position = valuePosition + counter * 10000;
                         long bufferSize = size - (10000 * ((long)buffCounter - 1));
                         byte[] buffer = FileCreator.LoadFormStream(_stream, bufferSize);
                         FileCreator.Content = buffer;
                         nodeNew.Value = FileCreator;
+                        LoadNode(nodeNew);
                         SaveContentNode(nodeNew);
-
                         break;
 
 
                     }
                     else
                     {
+                        _stream.Position = valuePosition + counter * 10000;
                         byte[] buffer = FileCreator.LoadFormStream(_stream, 10000);
                         FileCreator.Content = buffer;
                         nodeNew.Value = FileCreator;
+                        LoadNode(nodeNew);
                         SaveContentNode(nodeNew);
                         counter++;
 
                     }
 
                 }
+                }
             }
-        }
 
         public void WriteAppend(FileStreamLinkedListNode<FileContent> nodeToCopyFrom, FileStreamLinkedListNode<FileContent> nodeNew, byte[] toAddContent)
         {
