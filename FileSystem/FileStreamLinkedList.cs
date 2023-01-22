@@ -77,11 +77,19 @@ namespace FileSystem
 
                 SaveMetaData();
             }
-            else
+            /*else
             {
+                
                 LoadMetaData();
-            }
+            }*/
         }
+       /* public FileStreamLinkedListNode<FileContent> LoadContainer()
+        {
+            var node = ContainerExist();
+            return node;
+        }*/
+        //testovo
+
         void SaveMetaData()
         {
             _stream.Position = 0;
@@ -94,11 +102,30 @@ namespace FileSystem
             _stream.Position = 0;
             Size = _br.ReadInt64();
             _head = _br.ReadInt64();
+            _tail = _br.ReadInt64();     
+        }
+
+        //testovo
+         public FileStreamLinkedListNode<FileContent> ContainerExist()
+        {
+            _stream.Position = 0;
+            Size = _br.ReadInt64();
+            _head = _br.ReadInt64();
             _tail = _br.ReadInt64();
+            var node = new FileStreamLinkedListNode<FileContent>();
+            node.Position = _br.ReadInt64();
+            node.Prev = _br.ReadInt64();
+            node.Next = _br.ReadInt64();
+            node.LocalHead = _br.ReadInt64();
+            node.LocalPrev = _br.ReadInt64();
+            node.LocalNext = _br.ReadInt64();
+            node.IsFolder = _br.ReadBoolean();
+            node.Name = _br.ReadString();
+            return node;
 
         }
 
-       
+
         void SaveContentNode (FileStreamLinkedListNode<FileContent> node)
         {
             if (!node.IsFolder)

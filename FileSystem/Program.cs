@@ -17,27 +17,44 @@ namespace FileSystem
 
         static void Main(string[] args)
         {
-            File.Delete("storage.bin");
+            /*File.Delete("storage.bin");*/
+            var _new = File.Exists("storage.bin");
+            if (!_new)
+            {
+                using (var fsll = new FileStreamLinkedList<FileContent>("storage.bin"))
+                {
+                    /*var fileContent = new FileContent() { Content = new byte[] { 12, 31, 45, 65, 123, 77, 9 } };*/
+                    var newNode = new FileStreamLinkedListNode<FileContent>();
+                    newNode.Name = "ROOT";
+                    newNode.IsFolder = true;
+                    newNode.LocalHead = -1;
+                    newNode.LocalNext = -1;
+                    newNode.LocalPrev = -1;
+                    fsll.Insert(null, newNode);
+                    CurrentFolder = newNode;
+                    Console.WriteLine("Enter size of your FileSystem");
+                    CheckSize(fsll);
+                    while (true)
+                    {
+                        UserInput(fsll, ref newNode);
+                    }
 
-            using (var fsll = new FileStreamLinkedList<FileContent>("storage.bin"))
+                }
+            }else
             {
-                /*var fileContent = new FileContent() { Content = new byte[] { 12, 31, 45, 65, 123, 77, 9 } };*/
-            var newNode = new FileStreamLinkedListNode<FileContent>();
-            newNode.Name = "ROOT";
-            newNode.IsFolder = true;
-            newNode.LocalHead = -1;
-            newNode.LocalNext = -1;
-            newNode.LocalPrev = -1;
-            fsll.Insert(null, newNode);
-            CurrentFolder = newNode;
-            Console.WriteLine("Enter size of your FileSystem");
-            CheckSize(fsll);
-            while (true)
-            {
-                UserInput(fsll, ref newNode);
+                using (var fsll = new FileStreamLinkedList<FileContent>("storage.bin"))
+                {
+                    /*var fileContent = new FileContent() { Content = new byte[] { 12, 31, 45, 65, 123, 77, 9 } };*/
+                    CurrentFolder = fsll.ContainerExist();
+                    var newNode = CurrentFolder;
+                    
+                    while (true)
+                    {
+                        UserInput(fsll, ref newNode);
+                    }
+
+                }
             }
-      
-        }
 
         
     }
