@@ -785,11 +785,14 @@ namespace FileSystem
                                 LocalPrev = -1,
                                 LocalNext = 1
                             };
-                            FileCreator.Content = ToBytes("");
-                            newNode.Value = FileCreator;
-                            fsll.Insert(prevNode, newNode);
+                            /* FileCreator.Content = ToBytes("");
+                             newNode.Value = FileCreator;*/
                             FileCreator.Content = ToBytes(fileContent);
-                            newNode.Value = FileCreator;
+                            fsll.Insert(prevNode, newNode);
+                           /* FileCreator.Content = ToBytes(fileContent);
+                            newNode.Value = FileCreator;*/
+                            /* FileCreator.Content = ToBytes(fileContent);
+                             newNode.Value = FileCreator;*/
                             fsll.WriteAppend(currNode, newNode, FileCreator.Content);
                             var currNodePrev = fsll.LoadNodeByPositon(currNode.LocalPrev);
                             var currNodeNext = fsll.LoadNodeByPositon(currNode.LocalNext);
@@ -829,7 +832,15 @@ namespace FileSystem
                 case "import":
                     {
                         string input = arguments[1];
-                        string destination = arguments[2]; 
+                        string destination = arguments[2];
+                        using (var fs = new FileStream(input, FileMode.Open, FileAccess.ReadWrite))
+                        {
+                            if (fs.Length +  fsll.GetStreamLength() >= fsll.Size)
+                            {
+                                Console.WriteLine("Not enough space for file");
+                                break;
+                            }
+                        }
                         var pathhArray = utilityClass.mySplit(arguments[1],'\\');
                         var fileName=pathhArray[pathhArray.Length-1];
                         newNode = new FileStreamLinkedListNode<FileContent>
@@ -846,6 +857,8 @@ namespace FileSystem
                         var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
                         if (CurrentFolder.Name != "ROOT")
                             currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                       
+                        
 
                         bool found = false;
                         while(true)
@@ -922,6 +935,14 @@ namespace FileSystem
                     {
                         string input = arguments[1];
                         string destination = arguments[2];
+                        using (var fs = new FileStream(input, FileMode.Open, FileAccess.ReadWrite))
+                        {
+                            if (fs.Length + fsll.Size >= fsll.Size)
+                            {
+                                Console.WriteLine("Not enough space for file");
+                                break;
+                            }
+                        }
                         var pathhArray = utilityClass.mySplit(arguments[1], '\\');
                         var fileName = pathhArray[pathhArray.Length - 2];
                         var fileContent = "";

@@ -127,7 +127,7 @@ namespace FileSystem
 
         void SaveContentNode(FileStreamLinkedListNode<FileContent> node)
         {
-            if (!node.IsFolder)
+            if (!node.IsFolder && node.Value!=null)
                 node.Value.SaveToStream(_stream);
 
         }
@@ -208,7 +208,9 @@ namespace FileSystem
         public void WriteAppend(FileStreamLinkedListNode<FileContent> nodeToCopyFrom, FileStreamLinkedListNode<FileContent> nodeNew, byte[] toAddContent)
         {
             LoadNode(nodeToCopyFrom);
+            
             FileContent FileCreator = new FileContent();
+
             long valuePosition = _stream.Position;
 
 
@@ -219,12 +221,13 @@ namespace FileSystem
 
             var nextNode = LoadNodeByPositon(nodeToCopyFrom.Next);
             size = nextNode.Position - valuePosition;
+            /*size+=toAddContent.Length;*/
 
 
 
 
             int counter = 0;
-
+            
             var buffCounter = Math.Ceiling(((double)size / 10000));
             _stream.Position = valuePosition;
             if (size < 5000)
@@ -237,6 +240,7 @@ namespace FileSystem
                 /*FileCreator.Content = toAddContent;*/
                 str+= System.Text.Encoding.Default.GetString(toAddContent);
                 FileCreator.Content = ToBytes(str);
+                LoadNode(nodeNew);
                 nodeNew.Value = FileCreator;
                 SaveContentNode(nodeNew);
 
@@ -252,10 +256,12 @@ namespace FileSystem
                 {
                     if (counter == buffCounter - 1)
                     {
+                        _stream.Position = valuePosition + counter * 10000;
                         long bufferSize = size - (10000 * ((long)buffCounter - 1));
                         byte[] buffer = FileCreator.LoadFormStream(_stream, bufferSize);
                         FileCreator.Content = buffer;
                         nodeNew.Value = FileCreator;
+                        LoadNode(nodeNew);
                         SaveContentNode(nodeNew);
                         break;
 
@@ -263,15 +269,23 @@ namespace FileSystem
                     }
                     else
                     {
+                        _stream.Position = valuePosition + counter * 10000;
                         byte[] buffer = FileCreator.LoadFormStream(_stream, 10000);
                         FileCreator.Content = buffer;
                         nodeNew.Value = FileCreator;
+                        LoadNode(nodeNew);
                         SaveContentNode(nodeNew);
                         counter++;
 
                     }
 
+                  
                 }
+               
+                FileCreator.Content = toAddContent;
+                _stream.Position = _stream.Length;
+                nodeNew.Value = FileCreator;
+                SaveContentNode(nodeNew);
             }
 
 
@@ -558,6 +572,7 @@ namespace FileSystem
             using (var ofs = new FileStream($@"{filePath}", FileMode.Open, FileAccess.Read))
             {
                 FileContent FileCreator = new FileContent();
+
 
                 int counter = 0;
 
