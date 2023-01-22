@@ -13,6 +13,7 @@ namespace FileSystem
     {
         static FileStreamLinkedListNode<FileContent> CurrentFolder = null;
         static FileContent FileCreator = new FileContent();
+        
 
         static void Main(string[] args)
         {
@@ -389,7 +390,70 @@ namespace FileSystem
                     break;
                 case "cp":
                     {
+                        var fileName = arguments[1];
+                        var currNode = fsll.LoadNodeByPositon(CurrentFolder.LocalHead);
+                        while(true)
+                        {
+                            if(currNode.Name == fileName && !currNode.IsFolder)
+                            {
+                                newNode = new FileStreamLinkedListNode<FileContent>
+                                {
+                                    Value = null,
+                                    Name = currNode.Name,
+                                    IsFolder = false,
+                                    LocalPrev = -1,
+                                    LocalNext = -1,
+                                    LocalHead = currNode.Position,
+                                    
+                                };
+                                newNode.Name += ".CP";
+                                FileCreator.Content = ToBytes("");
+                                newNode.Value = FileCreator;
+                                if (currNode.LocalNext == -1)
+                                {
+                                    fsll.Insert(currNode, newNode);
+                                    currNode.LocalNext = newNode.Position;
+                                    newNode.LocalPrev = currNode.Position;
+                                    fsll.SaveNode(currNode);
+                                    fsll.SaveNode(newNode);
+                                    break;
+                                }
+                                else
+                                {
+                                    currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                    while (true)
+                                    {
+                                        if(currNode.LocalNext == -1)
+                                        {
+                                            fsll.Insert(currNode, newNode);
+                                            currNode.LocalNext = newNode.Position;
+                                            newNode.LocalPrev = currNode.Position;
+                                            fsll.SaveNode(currNode);
+                                            fsll.SaveNode(newNode);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                                        }
+
+                                    }
+                                }
+                                break;
+                            }
+                            else if (currNode.LocalNext != -1)
+                            {
+                                currNode = fsll.LoadNodeByPositon(currNode.LocalNext);
+                            }
+                            else
+                            {
+                                Console.WriteLine("The selected file was not found!");
+                                break;
+                            }
+                        }
+
                         
+
                     }// Kopirane na fail
                     break;
                 case "rm":
